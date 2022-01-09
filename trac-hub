@@ -112,9 +112,12 @@ class Migrator
   # Creates github issues for trac tickets.
   def migrate_tickets(start_ticket, filterout_closed)
     $logger.info('migrating issues')
+    # last created issue on github
+    issue_id = 0
     # We match the issue title to determine whether an issue exists already.
     @trac.tickets.order(:id).where{id >= start_ticket}.all.each do |ticket|
       next if filterout_closed and ticket[:status] == "closed"
+      next if issue_id >= ticket[:id]
       GracefulQuit.check("quitting after processing ticket ##{@last_created_issue}")
 
       if @safetychecks; begin
@@ -162,7 +165,12 @@ class Migrator
         # assert correct issue number
         if issue_id != ticket[:id]
           $logger.info("mismatch issue ##{issue_id} for ticket #{ticket[:id]}")
-          exit 1
+          if issue_id < ticket[:id]
+            # probably there is a gap in tickets numbers
+            exit 1
+          end
+          # most likely someone created issue or pull request during the migration,
+          # we'll skip tickets, so issue's id will be equil to ticket's id again.
         end
       else
         # to allow manual verification:
