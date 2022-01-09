@@ -210,18 +210,10 @@ class Migrator
 
     labels = Set[]
     if !ticket[:priority].nil? && !ticket[:priority].empty?
-      labels.add("priority: #{ticket[:priority].downcase}")
+      labels.add("priority: #{ticket[:priority]}")
     end
     if !ticket[:component].nil? && !ticket[:component].empty?
-      labels.add("#{ticket[:component].downcase}")
-    end
-    if !ticket[:keywords].nil? && !ticket[:keywords].empty?
-      ticket[:keywords].split.each do |keyword|
-        keyword.tr!(',', '')
-        if !keyword.nil? && !keyword.empty?
-          labels.add("#{keyword.downcase}")
-        end
-      end
+      labels.add(ticket[:component])
     end
 
     issue = {
